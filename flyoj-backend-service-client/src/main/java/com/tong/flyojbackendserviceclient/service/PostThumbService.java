@@ -1,4 +1,4 @@
-package com.tong.flybackendserviceclient.service;
+package com.tong.flyojbackendserviceclient.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.tong.flyojbackendmodel.model.entity.PostThumb;

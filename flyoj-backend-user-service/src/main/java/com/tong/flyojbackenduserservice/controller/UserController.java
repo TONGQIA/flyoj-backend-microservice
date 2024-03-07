@@ -2,7 +2,6 @@ package com.tong.flyojbackenduserservice.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
-import com.tong.flybackendserviceclient.service.UserService;
 import com.tong.flyojbackendcommon.annotation.AuthCheck;
 import com.tong.flyojbackendcommon.common.BaseResponse;
 import com.tong.flyojbackendcommon.common.DeleteRequest;
@@ -15,6 +14,7 @@ import com.tong.flyojbackendmodel.model.dto.user.*;
 import com.tong.flyojbackendmodel.model.entity.User;
 import com.tong.flyojbackendmodel.model.vo.LoginUserVO;
 import com.tong.flyojbackendmodel.model.vo.UserVO;
+import com.tong.flyojbackenduserservice.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,7 +33,7 @@ import java.util.List;
  * 
  */
 @RestController
-@RequestMapping("/user")
+@RequestMapping
 @Slf4j
 public class UserController {
 

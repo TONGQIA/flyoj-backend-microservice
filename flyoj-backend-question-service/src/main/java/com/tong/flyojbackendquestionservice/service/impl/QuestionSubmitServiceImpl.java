@@ -4,8 +4,8 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.tong.flybackendserviceclient.service.JudgeService;
-import com.tong.flybackendserviceclient.service.UserService;
+import com.tong.flyojbackendserviceclient.service.JudgeFeignClient;
+import com.tong.flyojbackendserviceclient.service.UserFeignClient;
 import com.tong.flyojbackendcommon.common.ErrorCode;
 import com.tong.flyojbackendcommon.constant.CommonConstant;
 import com.tong.flyojbackendcommon.exception.BusinessException;
@@ -50,11 +50,11 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
     private QuestionService questionService;
 
     @Resource
-    private UserService userService;
+    private UserFeignClient userFeignClient;
 
     @Resource
     @Lazy
-    private JudgeService judgeService;
+    private JudgeFeignClient judgeFeignClient;
 
     /**
      * 点赞
@@ -95,7 +95,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         // 异步执行判题服务
         Long questionSubmitId = questionSubmit.getId();
         CompletableFuture.runAsync(()->{
-            judgeService.doJudge(questionSubmitId);
+            judgeFeignClient.doJudge(questionSubmitId);
         });
         return questionSubmitId;
 
@@ -141,7 +141,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
     public QuestionSubmitVO getQuestionSubmitVO(QuestionSubmit questionSubmit, User loginUser) {
         QuestionSubmitVO questionSubmitVO = QuestionSubmitVO.objToVo(questionSubmit);
         // 脱敏
-        if (loginUser.getId() != questionSubmit.getUserId() || !userService.isAdmin(loginUser)){
+        if (loginUser.getId() != questionSubmit.getUserId() || !userFeignClient.isAdmin(loginUser)){
             questionSubmitVO.setCode(null);
         }
 
@@ -166,7 +166,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         // 2.1 将列表中的用户id装到set中
         Set<Long> userIdSet = questionSubmitList.stream().map(QuestionSubmit::getUserId).collect(Collectors.toSet());
         // 2.2 查找ids的用户信息并借助map形成对应关系
-        Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
+        Map<Long, List<User>> userIdUserListMap = userFeignClient.listByIds(userIdSet).stream()
                 .collect(Collectors.groupingBy(User::getId));
         // 3. 批量关联题目信息（逻辑同上）
         Set<Long> questionIDSet = questionSubmitList.stream().map(QuestionSubmit::getQuestionId).collect(Collectors.toSet());
@@ -177,7 +177,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
             // 填充用户信息
             Long userId = questionSubmitVO.getUserId();
             User user = userIdUserListMap.containsKey(userId)?  userIdUserListMap.get(userId).get(0):null;
-            questionSubmitVO.setUserVO(userService.getUserVO(user));
+            questionSubmitVO.setUserVO(userFeignClient.getUserVO(user));
             // 填充题目信息
             Long questionId = questionSubmitVO.getQuestionId();
             Question question =  questionIdQuestionListMap.containsKey(questionId)? questionIdQuestionListMap.get(questionId).get(0):null;

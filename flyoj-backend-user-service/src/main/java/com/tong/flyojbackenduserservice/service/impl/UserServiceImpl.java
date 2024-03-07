@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-import com.tong.flybackendserviceclient.service.UserService;
 import com.tong.flyojbackendcommon.common.ErrorCode;
 import com.tong.flyojbackendcommon.constant.CommonConstant;
 import com.tong.flyojbackendcommon.exception.BusinessException;
@@ -15,6 +14,7 @@ import com.tong.flyojbackendmodel.model.enums.UserRoleEnum;
 import com.tong.flyojbackendmodel.model.vo.LoginUserVO;
 import com.tong.flyojbackendmodel.model.vo.UserVO;
 import com.tong.flyojbackenduserservice.mapper.UserMapper;
+import com.tong.flyojbackenduserservice.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;

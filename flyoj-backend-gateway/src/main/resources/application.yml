@@ -1,0 +1,43 @@
+spring:
+  #nacos
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 43.139.98.22:8848
+        username: nacos
+        password: nacos
+    gateway:
+      routes:
+        - id: flyoj-backend-user-service
+          uri: lb://flyoj-backend-user-service
+          predicates:
+            - Path=/api/user/**
+        - id: flyoj-backend-question-service
+          uri: lb://flyoj-backend-question-service
+          predicates:
+            - Path=/api/question/**
+        - id: flyoj-backend-judge-service
+          uri: lb://flyoj-backend-judge-service
+          predicates:
+            - Path=/api/judge/**
+  application:
+    name: flyoj-backend-gateway
+  main:
+    web-application-type: reactive
+  # 默认 dev 环境
+  profiles:
+    active: dev
+server:
+  port: 8101
+
+knife4j:
+  # 聚合swagger文档
+  gateway:
+    enabled: true
+    # 指定为discover模式
+    strategy: discover
+    discover:
+      enabled: true
+      # 聚合自服务为swagger2规范的文档
+      version: swagger2
+

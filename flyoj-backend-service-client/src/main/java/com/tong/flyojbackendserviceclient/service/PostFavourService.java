@@ -1,4 +1,4 @@
-package com.tong.flybackendserviceclient.service;
+package com.tong.flyojbackendserviceclient.service;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;

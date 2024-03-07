@@ -2,8 +2,7 @@ package com.tong.flyojbackendjudgeservice;
 
 import cn.hutool.json.JSONUtil;
 
-import com.tong.flybackendserviceclient.service.QuestionService;
-import com.tong.flybackendserviceclient.service.QuestionSubmitService;
+import com.tong.flyojbackendserviceclient.service.QuestionFeignClient;
 import com.tong.flyojbackendcommon.common.ErrorCode;
 import com.tong.flyojbackendcommon.exception.BusinessException;
 import com.tong.flyojbackendjudgeservice.codesandbox.CodeSandbox;
@@ -18,7 +17,6 @@ import com.tong.flyojbackendmodel.model.dto.question.JudgeConfig;
 import com.tong.flyojbackendmodel.model.entity.Question;
 import com.tong.flyojbackendmodel.model.entity.QuestionSubmit;
 import com.tong.flyojbackendmodel.model.enums.QuestionSubmitStatusEnum;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -35,12 +33,8 @@ public class JudgeServiceImpl implements JudgeService {
     @Value("${codesandbox.type:example}")
     private String type;
 
-
     @Resource
-    private QuestionSubmitService questionSubmitService;
-
-    @Resource
-    private QuestionService questionService;
+    private QuestionFeignClient questionFeignClient;
 
     @Resource
     private JudgeManager judgeManager;
@@ -48,12 +42,12 @@ public class JudgeServiceImpl implements JudgeService {
     @Override
     public QuestionSubmit doJudge(long questionSubmitId) {
         // 1. 根据题目提交id获得题目提交信息
-        QuestionSubmit questionSubmit = questionSubmitService.getById(questionSubmitId);
+        QuestionSubmit questionSubmit = questionFeignClient.getQuestionSubmitById(questionSubmitId);
         if (questionSubmit == null){
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"题目提交信息不存在");
         }
         // 2. 查看题目是否存在
-        Question question = questionService.getById(questionSubmit.getQuestionId());
+        Question question = questionFeignClient.getQuestionById(questionSubmit.getQuestionId());
         if (question == null){
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"题目信息不存在");
         }
@@ -64,7 +58,7 @@ public class JudgeServiceImpl implements JudgeService {
         QuestionSubmit questionSubmitUpdate = new QuestionSubmit();
         questionSubmitUpdate.setId(questionSubmit.getId());
         questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.RUNNING.getValue());
-        boolean update = questionSubmitService.updateById(questionSubmitUpdate);
+        boolean update = questionFeignClient.updateQuestionSubmitById(questionSubmitUpdate);
         if (!update){
             throw new BusinessException(ErrorCode.OPERATION_ERROR,"题目状态更新错误");
         }
@@ -102,11 +96,11 @@ public class JudgeServiceImpl implements JudgeService {
         questionSubmitUpdate.setId(questionSubmitId);
         questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.SUCCEED.getValue());
         questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
-        update = questionSubmitService.updateById(questionSubmitUpdate);
+        update = questionFeignClient.updateQuestionSubmitById(questionSubmitUpdate);
         if (!update){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目提交状态更新错误");
         }
-        QuestionSubmit questionSubmitResult = questionSubmitService.getById(questionSubmitId);
+        QuestionSubmit questionSubmitResult = questionFeignClient.getQuestionSubmitById(questionSubmitId);
         return questionSubmitResult;
     }
 }

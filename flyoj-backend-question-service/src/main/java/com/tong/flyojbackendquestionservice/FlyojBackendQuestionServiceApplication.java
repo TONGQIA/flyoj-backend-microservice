@@ -14,6 +14,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @ComponentScan("com.tong")
+@EnableDiscoveryClient
+@EnableFeignClients(basePackages = {"com.tong.flyojbackendserviceclient.service"})
 public class FlyojBackendQuestionServiceApplication {
 
     public static void main(String[] args) {

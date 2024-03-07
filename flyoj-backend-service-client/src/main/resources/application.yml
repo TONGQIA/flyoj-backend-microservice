@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: flyoj-backend-service-client
+  #nacos
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 43.139.98.22:8848
+        username: nacos
+        password: nacos
