@@ -25,7 +25,8 @@ public class RemoteCodeSandboxImpl implements CodeSandbox {
     public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
         System.out.println("远程代码沙箱");
 
-        String url = "http://10.211.55.3:8090/executeCode";
+        //String url = "http://10.211.55.3:8090/executeCode";
+        String url = "http://localhost:8090/executeCode";
         String json = JSONUtil.toJsonStr(executeCodeRequest);
         HttpResponse httpResponse = HttpUtil.createPost(url)
                 .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)

@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class FlyojBackendJudgeServiceApplication {
 
     public static void main(String[] args) {
+        MqInitMain.doInit();
         SpringApplication.run(FlyojBackendJudgeServiceApplication.class, args);
     }
 

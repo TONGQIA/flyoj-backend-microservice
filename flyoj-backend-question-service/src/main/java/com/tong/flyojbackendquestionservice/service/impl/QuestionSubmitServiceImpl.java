@@ -4,8 +4,6 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.tong.flyojbackendserviceclient.service.JudgeFeignClient;
-import com.tong.flyojbackendserviceclient.service.UserFeignClient;
 import com.tong.flyojbackendcommon.common.ErrorCode;
 import com.tong.flyojbackendcommon.constant.CommonConstant;
 import com.tong.flyojbackendcommon.exception.BusinessException;
@@ -21,6 +19,11 @@ import com.tong.flyojbackendmodel.model.enums.QuestionSubmitStatusEnum;
 import com.tong.flyojbackendmodel.model.vo.QuestionSubmitVO;
 import com.tong.flyojbackendmodel.model.vo.QuestionVO;
 import com.tong.flyojbackendquestionservice.mapper.QuestionSubmitMapper;
+import com.tong.flyojbackendquestionservice.rabbitmq.MyMessageProducer;
+import com.tong.flyojbackendquestionservice.service.QuestionService;
+import com.tong.flyojbackendquestionservice.service.QuestionSubmitService;
+import com.tong.flyojbackendserviceclient.service.JudgeFeignClient;
+import com.tong.flyojbackendserviceclient.service.UserFeignClient;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,11 +34,7 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import com.tong.flyojbackendquestionservice.service.QuestionSubmitService;
-import com.tong.flyojbackendquestionservice.service.QuestionService;
 
 /**
  * @author tong
@@ -55,6 +54,9 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
     @Resource
     @Lazy
     private JudgeFeignClient judgeFeignClient;
+
+    @Resource
+    private MyMessageProducer myMessageProducer;
 
     /**
      * 点赞
@@ -92,11 +94,13 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         if (!save) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "数据插入失败");
         }
-        // 异步执行判题服务
+        // 使用rabbitmq发送消息 判题服务会接收并完成后续处理
         Long questionSubmitId = questionSubmit.getId();
-        CompletableFuture.runAsync(()->{
-            judgeFeignClient.doJudge(questionSubmitId);
-        });
+        myMessageProducer.sendMessage("code_exchange", "my_routingKey", String.valueOf(questionSubmitId));
+        // 异步执行判题服务
+//        CompletableFuture.runAsync(()->{
+//            judgeFeignClient.doJudge(questionSubmitId);
+//        });
         return questionSubmitId;
 
     }

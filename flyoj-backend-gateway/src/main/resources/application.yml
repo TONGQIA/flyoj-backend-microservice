@@ -39,5 +39,4 @@ knife4j:
     discover:
       enabled: true
       # 聚合自服务为swagger2规范的文档
-      version: swagger2
 
