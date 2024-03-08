@@ -1,7 +1,6 @@
 package com.tong.flyojbackenduserservice.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
 import com.tong.flyojbackendcommon.annotation.AuthCheck;
 import com.tong.flyojbackendcommon.common.BaseResponse;
 import com.tong.flyojbackendcommon.common.DeleteRequest;
@@ -16,14 +15,12 @@ import com.tong.flyojbackendmodel.model.vo.LoginUserVO;
 import com.tong.flyojbackendmodel.model.vo.UserVO;
 import com.tong.flyojbackenduserservice.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -33,7 +30,7 @@ import java.util.List;
  * 
  */
 @RestController
-@RequestMapping
+@RequestMapping("/")
 @Slf4j
 public class UserController {
 

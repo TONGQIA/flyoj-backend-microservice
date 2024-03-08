@@ -36,7 +36,7 @@ import java.util.List;
  * @author tong
  */
 @RestController
-@RequestMapping
+@RequestMapping("/")
 @Slf4j
 public class QuestionController {
 

@@ -25,7 +25,7 @@ public class UserInnerController implements UserFeignClient {
      * @return
      */
     @Override
-    @GetMapping("get/id")
+    @GetMapping("/get/id")
     public User getById(@RequestParam("userId") Long userId) {
         return userService.getById(userId);
     }
@@ -36,7 +36,7 @@ public class UserInnerController implements UserFeignClient {
      * @return
      */
     @Override
-    @GetMapping("get/ids")
+    @GetMapping("/get/ids")
     public List<User> listByIds(@RequestParam("idList") Set<Long> idList) {
         return userService.listByIds(idList);
     }
