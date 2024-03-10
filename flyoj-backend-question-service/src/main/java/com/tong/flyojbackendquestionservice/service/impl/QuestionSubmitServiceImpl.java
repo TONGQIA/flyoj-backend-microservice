@@ -14,8 +14,8 @@ import com.tong.flyojbackendmodel.model.dto.questionsubmit.QuestionSubmitQueryRe
 import com.tong.flyojbackendmodel.model.entity.Question;
 import com.tong.flyojbackendmodel.model.entity.QuestionSubmit;
 import com.tong.flyojbackendmodel.model.entity.User;
+import com.tong.flyojbackendmodel.model.enums.QuestionSubmitJudgeStatusEnum;
 import com.tong.flyojbackendmodel.model.enums.QuestionSubmitLanguageEnum;
-import com.tong.flyojbackendmodel.model.enums.QuestionSubmitStatusEnum;
 import com.tong.flyojbackendmodel.model.vo.QuestionSubmitVO;
 import com.tong.flyojbackendmodel.model.vo.QuestionVO;
 import com.tong.flyojbackendquestionservice.mapper.QuestionSubmitMapper;
@@ -88,7 +88,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         questionSubmit.setLanguage(questionSubmitAddRequest.getLanguage());
         questionSubmit.setJudgeInfo(JSONUtil.toJsonStr(new JudgeInfo()));
         // DONE：设置状态初始值
-        questionSubmit.setStatus(QuestionSubmitStatusEnum.WAITING.getValue());
+        questionSubmit.setJudgeStatus(QuestionSubmitJudgeStatusEnum.WAITING.getValue());
 
         boolean save = this.save(questionSubmit);
         if (!save) {
@@ -119,7 +119,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
             return queryWrapper;
         }
         String language = questionSubmitQueryRequest.getLanguage();
-        Integer status = questionSubmitQueryRequest.getStatus();
+        Integer judgeJudgeStatus = questionSubmitQueryRequest.getJudgeStatus();
         Long questionId = questionSubmitQueryRequest.getQuestionId();
         String sortField = questionSubmitQueryRequest.getSortField();
         String sortOrder = questionSubmitQueryRequest.getSortOrder();
@@ -127,9 +127,9 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         // 拼接查询条件
         queryWrapper.eq(ObjectUtils.isNotEmpty(questionId), "questionId", questionId);
         queryWrapper.eq(StringUtils.isNotBlank(language), "language", language);
-        queryWrapper.eq(QuestionSubmitStatusEnum.getEnumByValue(status) != null, "status", status);
+        queryWrapper.eq(QuestionSubmitJudgeStatusEnum.getEnumByValue(judgeJudgeStatus) != null, "judgeJudgeStatus", judgeJudgeStatus);
 
-        queryWrapper.eq("isDelete", false);
+        queryWrapper.eq("status", 0);
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
         return queryWrapper;

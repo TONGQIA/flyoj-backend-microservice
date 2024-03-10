@@ -16,9 +16,9 @@ import com.tong.flyojbackendmodel.model.dto.question.JudgeCase;
 import com.tong.flyojbackendmodel.model.dto.question.JudgeConfig;
 import com.tong.flyojbackendmodel.model.entity.Question;
 import com.tong.flyojbackendmodel.model.entity.QuestionSubmit;
-import com.tong.flyojbackendmodel.model.enums.QuestionSubmitStatusEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.tong.flyojbackendmodel.model.enums.QuestionSubmitJudgeStatusEnum;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -52,12 +52,12 @@ public class JudgeServiceImpl implements JudgeService {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"题目信息不存在");
         }
         // 3. 更改题目状态
-        if (questionSubmit.getStatus().equals(QuestionSubmitStatusEnum.RUNNING.getValue()) ){
+        if (questionSubmit.getJudgeStatus().equals(QuestionSubmitJudgeStatusEnum.RUNNING.getValue()) ){
             throw new BusinessException(ErrorCode.OPERATION_ERROR,"题目正在判题");
         }
         QuestionSubmit questionSubmitUpdate = new QuestionSubmit();
         questionSubmitUpdate.setId(questionSubmit.getId());
-        questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.RUNNING.getValue());
+        questionSubmitUpdate.setJudgeStatus(QuestionSubmitJudgeStatusEnum.RUNNING.getValue());
         boolean update = questionFeignClient.updateQuestionSubmitById(questionSubmitUpdate);
         if (!update){
             throw new BusinessException(ErrorCode.OPERATION_ERROR,"题目状态更新错误");
@@ -94,7 +94,7 @@ public class JudgeServiceImpl implements JudgeService {
         // 6. 更新数据库
         questionSubmitUpdate= new QuestionSubmit();
         questionSubmitUpdate.setId(questionSubmitId);
-        questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.SUCCEED.getValue());
+        questionSubmitUpdate.setJudgeStatus(QuestionSubmitJudgeStatusEnum.SUCCEED.getValue());
         questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
         update = questionFeignClient.updateQuestionSubmitById(questionSubmitUpdate);
         if (!update){

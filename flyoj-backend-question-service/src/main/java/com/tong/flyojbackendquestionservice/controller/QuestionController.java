@@ -3,6 +3,7 @@ package com.tong.flyojbackendquestionservice.controller;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
+import com.tong.flyojbackendmodel.model.enums.QuestionStatusEnum;
 import com.tong.flyojbackendserviceclient.service.UserFeignClient;
 import com.tong.flyojbackendcommon.annotation.AuthCheck;
 import com.tong.flyojbackendcommon.common.BaseResponse;
@@ -114,9 +115,80 @@ public class QuestionController {
         if (!oldQuestion.getUserId().equals(user.getId()) && !userFeignClient.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
-        boolean b = questionService.removeById(id);
-        return ResultUtils.success(b);
+        // 假删除
+        Question question = new Question();
+        question.setId(id);
+        question.setStatus(QuestionStatusEnum.DELETE.getValue());
+        boolean result = questionService.updateById(question);
+        return ResultUtils.success(result);
     }
+
+    /**
+     * 隐藏
+     *
+     * @param hideRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/hide")
+    public BaseResponse<Boolean> hideQuestion(@RequestBody HideRequest hideRequest, HttpServletRequest request) {
+        if (hideRequest == null || hideRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userFeignClient.getLoginUser(request);
+        long id = hideRequest.getId();
+        // 判断是否存在
+        Question oldQuestion = questionService.getById(id);
+        ThrowUtils.throwIf(oldQuestion == null||oldQuestion.getStatus().equals(QuestionStatusEnum.DELETE.getValue()) , ErrorCode.NOT_FOUND_ERROR);
+        if (oldQuestion.getStatus().equals(QuestionStatusEnum.HIDE.getValue())){
+            log.info("题目已隐藏，无须重复隐藏");
+            return ResultUtils.success(true);
+        }
+        // 仅本人或管理员可隐藏
+        if (!oldQuestion.getUserId().equals(user.getId()) && !userFeignClient.isAdmin(request)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        // 隐藏
+        Question question = new Question();
+        question.setId(id);
+        question.setStatus(QuestionStatusEnum.HIDE.getValue());
+        boolean result = questionService.updateById(question);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 取消隐藏
+     *
+     * @param hideRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/display")
+    public BaseResponse<Boolean> displayQuestion(@RequestBody HideRequest hideRequest, HttpServletRequest request) {
+        if (hideRequest == null || hideRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userFeignClient.getLoginUser(request);
+        long id = hideRequest.getId();
+        // 判断是否存在
+        Question oldQuestion = questionService.getById(id);
+        ThrowUtils.throwIf(oldQuestion == null||oldQuestion.getStatus().equals(QuestionStatusEnum.DELETE.getValue()) , ErrorCode.NOT_FOUND_ERROR);
+        if (oldQuestion.getStatus().equals(QuestionStatusEnum.NORMAL.getValue())){
+            log.info("题目已显示，无须重复显示");
+            return ResultUtils.success(true);
+        }
+        // 仅本人或管理员可隐藏
+        if (!oldQuestion.getUserId().equals(user.getId()) && !userFeignClient.isAdmin(request)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        // 恢复
+        Question question = new Question();
+        question.setId(id);
+        question.setStatus(QuestionStatusEnum.NORMAL.getValue());
+        boolean result = questionService.updateById(question);
+        return ResultUtils.success(result);
+    }
+
 
     /**
      * 更新（仅管理员）
@@ -136,7 +208,7 @@ public class QuestionController {
         List<String> tags = questionUpdateRequest.getTags();
         question.setTags(tags != null ? JSONUtil.toJsonStr(tags) : null);
 
-        JudgeCase judgeCase = questionUpdateRequest.getJudgeCase();
+        List<JudgeCase> judgeCase = questionUpdateRequest.getJudgeCase();
         question.setJudgeCase(judgeCase != null ? JSONUtil.toJsonStr(judgeCase):null);
 
         JudgeConfig judgeConfig = questionUpdateRequest.getJudgeConfig();
@@ -150,7 +222,23 @@ public class QuestionController {
         boolean result = questionService.updateById(question);
         return ResultUtils.success(result);
     }
-
+    /**
+     * 根据 id 获取（管理员）
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/get")
+    public BaseResponse<Question> getQuestionById(long id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Question question = questionService.getById(id);
+        if (question == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        return ResultUtils.success(question);
+    }
     /**
      * 根据 id 获取
      *
@@ -189,20 +277,20 @@ public class QuestionController {
     }
 
     /**
-     * 分页获取用户列表（仅管理员）
+     * 分页获取列表（仅管理员）
      *
      * @param questionQueryRequest
      * @param request
      * @return
      */
     @PostMapping("/list/page")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @AuthCheck(mustRole = UserConstant.TEACHER_ROLE)
     public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
                                                    HttpServletRequest request) {
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
         Page<Question> questionPage = questionService.page(new Page<>(current, size),
-                questionService.getQueryWrapper(questionQueryRequest));
+                questionService.getQueryWrapperAdmin(questionQueryRequest));
         return ResultUtils.success(questionPage);
     }
 

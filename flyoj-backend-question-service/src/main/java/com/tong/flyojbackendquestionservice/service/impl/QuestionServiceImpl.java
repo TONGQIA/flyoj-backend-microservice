@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
+import com.tong.flyojbackendmodel.model.enums.QuestionStatusEnum;
 import com.tong.flyojbackendserviceclient.service.UserFeignClient;
 import com.tong.flyojbackendcommon.common.ErrorCode;
 import com.tong.flyojbackendcommon.constant.CommonConstant;
@@ -68,7 +69,8 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         Long userId = question.getUserId();
         Date createTime = question.getCreateTime();
         Date updateTime = question.getUpdateTime();
-        Integer isDelete = question.getIsDelete();
+        Integer status = question.getStatus();
+
 
 
         // 创建时，参数不能为空
@@ -125,7 +127,46 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         }
         queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
-        queryWrapper.eq("isDelete", false);
+        queryWrapper.eq("status", QuestionStatusEnum.NORMAL.getValue());
+        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                sortField);
+        return queryWrapper;
+    }
+
+    /**
+     * 获取查询包装类
+     *
+     * @param questionQueryRequest
+     * @return
+     */
+    @Override
+    public QueryWrapper<Question> getQueryWrapperAdmin(QuestionQueryRequest questionQueryRequest) {
+        QueryWrapper<Question> queryWrapper = new QueryWrapper<>();
+        if (questionQueryRequest == null) {
+            return queryWrapper;
+        }
+        Long id = questionQueryRequest.getId();
+        String title = questionQueryRequest.getTitle();
+        String content = questionQueryRequest.getContent();
+        List<String> tags = questionQueryRequest.getTags();
+        String answer = questionQueryRequest.getAnswer();
+        Long userId = questionQueryRequest.getUserId();
+        String sortField = questionQueryRequest.getSortField();
+        String sortOrder = questionQueryRequest.getSortOrder();
+
+        // 拼接查询条件
+        queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
+        queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
+        queryWrapper.like(StringUtils.isNotBlank(answer), "answer", content);
+        if (CollectionUtils.isNotEmpty(tags)) {
+            for (String tag : tags) {
+                queryWrapper.like("tags", "\"" + tag + "\"");
+            }
+        }
+        queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
+        // 这里找的是正常显示和隐藏的
+        queryWrapper.ne("status", QuestionStatusEnum.DELETE.getValue());
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
         return queryWrapper;

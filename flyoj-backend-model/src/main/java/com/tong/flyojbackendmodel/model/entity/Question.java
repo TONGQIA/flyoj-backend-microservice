@@ -88,9 +88,9 @@ public class Question implements Serializable {
     private Date updateTime;
 
     /**
-     * 是否删除
+     * 题目状态：0:正常 1:删除 2:隐藏
      */
-    private Integer isDelete;
+    private Integer status;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

@@ -40,7 +40,7 @@ public class QuestionSubmit implements Serializable {
     /**
      * 判题状态（0-待判题、 1-判题中、 2-成功、 3-失败） 
      */
-    private Integer status;
+    private Integer judgeStatus;
 
     /**
      * 题目 id
@@ -63,9 +63,9 @@ public class QuestionSubmit implements Serializable {
     private Date updateTime;
 
     /**
-     * 是否删除
+     * 题目状态：0:正常 1:删除 2:隐藏
      */
-    private Integer isDelete;
+    private Integer status;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * @author tong
  * 
  */
-public enum QuestionSubmitStatusEnum {
+public enum QuestionSubmitJudgeStatusEnum {
 
     WAITING("待判题", 0),
     RUNNING("判题中", 1),
@@ -23,7 +23,7 @@ public enum QuestionSubmitStatusEnum {
 
     private final Integer value;
 
-    QuestionSubmitStatusEnum(String text, Integer value) {
+    QuestionSubmitJudgeStatusEnum(String text, Integer value) {
         this.text = text;
         this.value = value;
     }
@@ -43,11 +43,11 @@ public enum QuestionSubmitStatusEnum {
      * @param value
      * @return
      */
-    public static QuestionSubmitStatusEnum getEnumByValue(Integer value) {
+    public static QuestionSubmitJudgeStatusEnum getEnumByValue(Integer value) {
         if (ObjectUtils.isEmpty(value)) {
             return null;
         }
-        for (QuestionSubmitStatusEnum anEnum : QuestionSubmitStatusEnum.values()) {
+        for (QuestionSubmitJudgeStatusEnum anEnum : QuestionSubmitJudgeStatusEnum.values()) {
             if (anEnum.value.equals(value)) {
                 return anEnum;
             }
