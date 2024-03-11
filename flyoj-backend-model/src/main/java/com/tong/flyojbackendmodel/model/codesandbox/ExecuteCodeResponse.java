@@ -1,11 +1,9 @@
 package com.tong.flyojbackendmodel.model.codesandbox;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.List;
 
 @Data
@@ -27,7 +25,7 @@ public class ExecuteCodeResponse {
     /**
      * 执行状态
      */
-    private Integer judgeStatus;
+    private Integer executeStatus;
 
     /**
      * 判题信息

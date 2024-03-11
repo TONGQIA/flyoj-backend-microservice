@@ -2,6 +2,7 @@ package com.tong.flyojbackendjudgeservice;
 
 import cn.hutool.json.JSONUtil;
 
+import com.tong.flyojbackendmodel.model.codesandbox.ExecuteStatusEnum;
 import com.tong.flyojbackendserviceclient.service.QuestionFeignClient;
 import com.tong.flyojbackendcommon.common.ErrorCode;
 import com.tong.flyojbackendcommon.exception.BusinessException;
@@ -79,23 +80,48 @@ public class JudgeServiceImpl implements JudgeService {
         CodeSandboxProxy codeSandboxProxy = new CodeSandboxProxy(codeSandbox);
         ExecuteCodeResponse executeCodeResponse = codeSandboxProxy.executeCode(executeCodeRequest);
         // 5. 根据沙箱的结果设置题目的判题状态和信息
-        List<String> outputListReal = executeCodeResponse.getOutputList();
-        List<String> outputListExpect = judgeCaseList.stream().map(JudgeCase::getOutput).collect(Collectors.toList());
-        JudgeInfo judgeInfoReal = executeCodeResponse.getJudgeInfo();
-        JudgeConfig judgeConfigExpect = JSONUtil.toBean(question.getJudgeConfig(), JudgeConfig.class);
-        JudgeContext judgeContext = JudgeContext.builder()
-                .outputListReal(outputListReal)
-                .outputListExpect(outputListExpect)
-                .judgeConfigExpect(judgeConfigExpect)
-                .judgeInfoReal(judgeInfoReal)
-                .questionSubmit(questionSubmit)
-                .build();
-        JudgeInfo judgeInfo = judgeManager.doJudge(judgeContext);
+        // 根据executeCodeResponse的executeStatus做不同处理
+        Integer executeStatus = executeCodeResponse.getExecuteStatus();
+        // 5.1 运行成功， 接下来要做判题
+        if (executeStatus.equals(ExecuteStatusEnum.SUCCESS.getCode())){
+            List<String> outputListReal = executeCodeResponse.getOutputList();
+            List<String> outputListExpect = judgeCaseList.stream().map(JudgeCase::getOutput).collect(Collectors.toList());
+            JudgeInfo judgeInfoReal = executeCodeResponse.getJudgeInfo();
+            JudgeConfig judgeConfigExpect = JSONUtil.toBean(question.getJudgeConfig(), JudgeConfig.class);
+            JudgeContext judgeContext = JudgeContext.builder()
+                    .outputListReal(outputListReal)
+                    .outputListExpect(outputListExpect)
+                    .judgeConfigExpect(judgeConfigExpect)
+                    .judgeInfoReal(judgeInfoReal)
+                    .questionSubmit(questionSubmit)
+                    .build();
+            JudgeInfo judgeInfo = judgeManager.doJudge(judgeContext);
+            // 更新题目提交记录
+            questionSubmitUpdate= new QuestionSubmit();
+            questionSubmitUpdate.setId(questionSubmitId);
+            questionSubmitUpdate.setJudgeStatus(QuestionSubmitJudgeStatusEnum.SUCCEED.getValue());
+            questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
+        } else if (executeStatus >= ExecuteStatusEnum.RUN_ERROR.getCode()) {
+            //5.2  执行状态为3 4 5 --》judgestatus为成功 judgeinfo的message为不同的
+            // 更新题目提交记录
+            questionSubmitUpdate= new QuestionSubmit();
+            questionSubmitUpdate.setId(questionSubmitId);
+            questionSubmitUpdate.setJudgeStatus(QuestionSubmitJudgeStatusEnum.SUCCEED.getValue());
+            JudgeInfo judgeInfo = new JudgeInfo();
+            judgeInfo.setMessage(ExecuteStatusEnum.getEnumByValue(executeStatus).getMessage());
+            judgeInfo.setErrorMessage(executeCodeResponse.getMessage());
+            questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
+        }else {
+            //5.3  执行状态为1 2 --》judgestatus为失败
+            // 更新题目提交记录
+            questionSubmitUpdate= new QuestionSubmit();
+            questionSubmitUpdate.setId(questionSubmitId);
+            questionSubmitUpdate.setJudgeStatus(QuestionSubmitJudgeStatusEnum.FAILED.getValue());
+            JudgeInfo judgeInfo = new JudgeInfo();
+            judgeInfo.setMessage(ExecuteStatusEnum.getEnumByValue(executeStatus).getMessage());
+            questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
+        }
         // 6. 更新数据库
-        questionSubmitUpdate= new QuestionSubmit();
-        questionSubmitUpdate.setId(questionSubmitId);
-        questionSubmitUpdate.setJudgeStatus(QuestionSubmitJudgeStatusEnum.SUCCEED.getValue());
-        questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
         update = questionFeignClient.updateQuestionSubmitById(questionSubmitUpdate);
         if (!update){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目提交状态更新错误");

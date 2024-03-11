@@ -5,8 +5,8 @@ import com.tong.flyojbackendjudgeservice.codesandbox.CodeSandbox;
 import com.tong.flyojbackendmodel.model.codesandbox.ExecuteCodeRequest;
 import com.tong.flyojbackendmodel.model.codesandbox.ExecuteCodeResponse;
 import com.tong.flyojbackendmodel.model.codesandbox.JudgeInfo;
+import com.tong.flyojbackendmodel.model.codesandbox.ExecuteStatusEnum;
 import com.tong.flyojbackendmodel.model.enums.JudgeInfoMessageEnum;
-import com.tong.flyojbackendmodel.model.enums.QuestionSubmitJudgeStatusEnum;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class ExampleCodeSandboxImpl implements CodeSandbox {
         ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
         executeCodeResponse.setOutputList(inputList);
         executeCodeResponse.setMessage("测试成功");
-        executeCodeResponse.setJudgeStatus(QuestionSubmitJudgeStatusEnum.WAITING.getValue());
+        executeCodeResponse.setExecuteStatus(ExecuteStatusEnum.SUCCESS.getCode());
         JudgeInfo judgeInfo = new JudgeInfo();
         judgeInfo.setMessage(JudgeInfoMessageEnum.ACCEPTED.getValue());
         judgeInfo.setMemory(100L);

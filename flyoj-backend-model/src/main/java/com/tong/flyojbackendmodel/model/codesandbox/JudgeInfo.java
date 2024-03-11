@@ -18,6 +18,13 @@ public class JudgeInfo implements Serializable {
      */
     private String message;
 
+
+    /**
+     * 程序执行错误信息
+     */
+    private String errorMessage;
+
+
     /**
      * 消耗内存(KB)
      */
